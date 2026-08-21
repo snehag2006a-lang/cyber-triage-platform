@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { extractIoCs } from '../services/iocExtractor'
 
 type CaseData = {
@@ -38,9 +38,25 @@ function CaseInformation({
     hashes: [] as string[],
   })
 
-  // -----------------------------
-  // Evidence File Upload
-  // -----------------------------
+  // =========================================================
+  // AUTO FOCUS FIRST INPUT
+  // =========================================================
+
+  const caseIdInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      caseIdInputRef.current?.focus()
+    }, 100)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [])
+
+  // =========================================================
+  // EVIDENCE FILE UPLOAD
+  // =========================================================
 
   const handleFileUpload = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -68,9 +84,9 @@ function CaseInformation({
     reader.readAsText(file)
   }
 
-  // -----------------------------
-  // Form Submit
-  // -----------------------------
+  // =========================================================
+  // FORM SUBMIT
+  // =========================================================
 
   const handleSubmit = (
     event: React.FormEvent<HTMLFormElement>,
@@ -85,14 +101,22 @@ function CaseInformation({
 
     // Convert extracted IoCs into readable text
     const extractedIoCText = [
-      ...extractedIoCs.ips.map((ip) => `IP: ${ip}`),
-      ...extractedIoCs.urls.map((url) => `URL: ${url}`),
+      ...extractedIoCs.ips.map(
+        (ip) => `IP: ${ip}`,
+      ),
+
+      ...extractedIoCs.urls.map(
+        (url) => `URL: ${url}`,
+      ),
+
       ...extractedIoCs.domains.map(
         (domain) => `Domain: ${domain}`,
       ),
+
       ...extractedIoCs.emails.map(
         (email) => `Email: ${email}`,
       ),
+
       ...extractedIoCs.hashes.map(
         (hash) => `Hash: ${hash}`,
       ),
@@ -107,6 +131,7 @@ function CaseInformation({
 
     const evidenceDescription = [
       String(formData.get('evidence') || ''),
+
       fileName
         ? `Evidence file uploaded: ${fileName}`
         : '',
@@ -115,30 +140,47 @@ function CaseInformation({
       .join('\n')
 
     onSubmit({
-      caseId: String(formData.get('caseId') || ''),
-      title: String(formData.get('title') || ''),
+      caseId: String(
+        formData.get('caseId') || '',
+      ),
+
+      title: String(
+        formData.get('title') || '',
+      ),
+
       incidentType: String(
         formData.get('incidentType') || '',
       ),
+
       severity: String(
         formData.get('severity') || '',
       ),
+
       description: String(
         formData.get('description') || '',
       ),
+
       affectedAssets: String(
         formData.get('affectedAssets') || '',
       ),
+
       detectedAt: String(
         formData.get('detectedAt') || '',
       ),
+
       iocs: combinedIoCs,
+
       evidence: evidenceDescription,
+
       notes: String(
         formData.get('notes') || '',
       ),
     })
   }
+
+  // =========================================================
+  // TOTAL IoCs
+  // =========================================================
 
   const totalIoCs =
     extractedIoCs.ips.length +
@@ -147,14 +189,18 @@ function CaseInformation({
     extractedIoCs.emails.length +
     extractedIoCs.hashes.length
 
+  // =========================================================
+  // UI
+  // =========================================================
+
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
 
       <div className="mx-auto max-w-4xl">
 
-        {/* ============================= */}
+        {/* ================================================= */}
         {/* HEADER */}
-        {/* ============================= */}
+        {/* ================================================= */}
 
         <div className="mb-8">
 
@@ -179,7 +225,7 @@ function CaseInformation({
 
           </div>
 
-          {/* Context */}
+          {/* CONTEXT */}
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
 
@@ -211,18 +257,18 @@ function CaseInformation({
 
         </div>
 
-        {/* ============================= */}
+        {/* ================================================= */}
         {/* FORM */}
-        {/* ============================= */}
+        {/* ================================================= */}
 
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl md:p-8"
         >
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* BASIC INFORMATION */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           <div className="mb-8">
 
@@ -232,14 +278,23 @@ function CaseInformation({
 
             <div className="grid gap-5 md:grid-cols-2">
 
+              {/* CASE ID */}
+
               <div>
 
-                <label className="mb-2 block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="case-id"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
                   Case ID
                 </label>
 
                 <input
+                  ref={caseIdInputRef}
+                  id="case-id"
                   name="caseId"
+                  type="text"
+                  autoComplete="off"
                   required
                   placeholder="CASE-2026-001"
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
@@ -247,14 +302,22 @@ function CaseInformation({
 
               </div>
 
+              {/* INCIDENT TITLE */}
+
               <div>
 
-                <label className="mb-2 block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="incident-title"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
                   Incident Title
                 </label>
 
                 <input
+                  id="incident-title"
                   name="title"
+                  type="text"
+                  autoComplete="off"
                   required
                   placeholder="Suspicious login activity"
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
@@ -266,9 +329,9 @@ function CaseInformation({
 
           </div>
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* INCIDENT CLASSIFICATION */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           <div className="mb-8">
 
@@ -278,13 +341,19 @@ function CaseInformation({
 
             <div className="grid gap-5 md:grid-cols-2">
 
+              {/* INCIDENT TYPE */}
+
               <div>
 
-                <label className="mb-2 block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="incident-type"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
                   Incident Type
                 </label>
 
                 <select
+                  id="incident-type"
                   name="incidentType"
                   required
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
@@ -330,13 +399,19 @@ function CaseInformation({
 
               </div>
 
+              {/* SEVERITY */}
+
               <div>
 
-                <label className="mb-2 block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="severity"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
                   Severity
                 </label>
 
                 <select
+                  id="severity"
                   name="severity"
                   required
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
@@ -370,9 +445,9 @@ function CaseInformation({
 
           </div>
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* INCIDENT DETAILS */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           <div className="mb-8">
 
@@ -382,13 +457,19 @@ function CaseInformation({
 
             <div className="space-y-5">
 
+              {/* DESCRIPTION */}
+
               <div>
 
-                <label className="mb-2 block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="description"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
                   Description
                 </label>
 
                 <textarea
+                  id="description"
                   name="description"
                   required
                   rows={5}
@@ -398,27 +479,41 @@ function CaseInformation({
 
               </div>
 
+              {/* AFFECTED ASSETS */}
+
               <div>
 
-                <label className="mb-2 block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="affected-assets"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
                   Affected Assets
                 </label>
 
                 <input
+                  id="affected-assets"
                   name="affectedAssets"
+                  type="text"
+                  autoComplete="off"
                   placeholder="e.g. Server-01, user@example.com, 10.0.0.25"
                   className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20"
                 />
 
               </div>
 
+              {/* DETECTED TIME */}
+
               <div>
 
-                <label className="mb-2 block text-sm font-medium text-slate-300">
+                <label
+                  htmlFor="detected-at"
+                  className="mb-2 block text-sm font-medium text-slate-300"
+                >
                   Date / Time Detected
                 </label>
 
                 <input
+                  id="detected-at"
                   name="detectedAt"
                   type="datetime-local"
                   required
@@ -431,9 +526,9 @@ function CaseInformation({
 
           </div>
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* MANUAL IoCs */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           <div className="mb-8">
 
@@ -447,6 +542,7 @@ function CaseInformation({
             </p>
 
             <textarea
+              id="iocs"
               name="iocs"
               rows={5}
               placeholder={`Example:
@@ -460,9 +556,9 @@ attacker@example.com
 
           </div>
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* EVIDENCE DESCRIPTION */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           <div className="mb-8">
 
@@ -471,6 +567,7 @@ attacker@example.com
             </h2>
 
             <textarea
+              id="evidence"
               name="evidence"
               rows={4}
               placeholder="Describe available logs, screenshots, memory dumps, network captures, files or other evidence..."
@@ -479,9 +576,9 @@ attacker@example.com
 
           </div>
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* FILE UPLOAD */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           <div className="mb-8">
 
@@ -514,6 +611,8 @@ attacker@example.com
 
               </label>
 
+              {/* FILE INFORMATION */}
+
               {fileName && (
 
                 <div className="mt-5 rounded-lg border border-cyan-400/20 bg-cyan-400/5 p-4">
@@ -538,9 +637,9 @@ attacker@example.com
 
           </div>
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* EXTRACTED IoCs */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           {fileName && (
 
@@ -576,15 +675,11 @@ attacker@example.com
 
               <div className="grid gap-4 md:grid-cols-2">
 
-                {/* IPs */}
-
                 <IoCGroup
                   title="IP Addresses"
                   icon="🌐"
                   values={extractedIoCs.ips}
                 />
-
-                {/* URLs */}
 
                 <IoCGroup
                   title="URLs"
@@ -592,23 +687,17 @@ attacker@example.com
                   values={extractedIoCs.urls}
                 />
 
-                {/* Domains */}
-
                 <IoCGroup
                   title="Domains"
                   icon="🌍"
                   values={extractedIoCs.domains}
                 />
 
-                {/* Emails */}
-
                 <IoCGroup
                   title="Email Addresses"
                   icon="📧"
                   values={extractedIoCs.emails}
                 />
-
-                {/* Hashes */}
 
                 <IoCGroup
                   title="File Hashes"
@@ -634,9 +723,9 @@ attacker@example.com
 
           )}
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* NOTES */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           <div className="mb-8">
 
@@ -645,6 +734,7 @@ attacker@example.com
             </h2>
 
             <textarea
+              id="notes"
               name="notes"
               rows={4}
               placeholder="Add any additional information that may help the investigation..."
@@ -653,9 +743,9 @@ attacker@example.com
 
           </div>
 
-          {/* ============================= */}
+          {/* ================================================= */}
           {/* ACTIONS */}
-          {/* ============================= */}
+          {/* ================================================= */}
 
           <div className="flex flex-col-reverse gap-3 border-t border-slate-800 pt-6 sm:flex-row sm:justify-between">
 
@@ -684,9 +774,9 @@ attacker@example.com
   )
 }
 
-// -----------------------------
-// IoC Group Component
-// -----------------------------
+// =========================================================
+// IoC GROUP COMPONENT
+// =========================================================
 
 type IoCGroupProps = {
   title: string
